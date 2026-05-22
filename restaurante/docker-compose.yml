@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: restaurante_broker
+    ports:
+      - "5672:5672"   # Porta do serviço
+      - "15672:15672" # Porta do painel Web
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+  cozinha:
+    build: .
+    container_name: restaurante_cozinha
+    command: node cozinha.js
+    environment:
+      - RABBITMQ_URL=amqp://rabbitmq
+    depends_on:
+      - rabbitmq
+
+  pagamento:
+    build: .
+    container_name: restaurante_pagamento
+    command: node pagamento.js
+    environment:
+      - RABBITMQ_URL=amqp://rabbitmq
+    depends_on:
+      - rabbitmq
+
+volumes:
+  rabbitmq_data:
